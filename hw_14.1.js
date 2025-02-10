@@ -58,7 +58,7 @@ class TodoList {
         this.todos = this.todos.filter(t => t !== todo);
     }
     getAll() {
-        return [...this.todos]; // повертаємо копію
+        return [...this.todos];
     }
     findByTitle(title) {
         return this.todos.find(todo => todo.title === title);

@@ -1,6 +1,6 @@
 class Todo {
-    public readonly title: string;
-    public readonly content: string;
+    public title: string;
+    public content: string;
     protected createdAt: Date;
     protected updatedAt: Date;
     protected completed: boolean;
@@ -20,8 +20,8 @@ class Todo {
         if (!newTitle.trim() || !newContent.trim()) {
             throw new Error("Назва та зміст не можуть бути порожніми");
         }
-        (this as any).title = newTitle;
-        (this as any).content = newContent;
+        this.title = newTitle;
+        this.content = newContent;
         this.updatedAt = new Date();
     }
 
