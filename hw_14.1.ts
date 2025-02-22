@@ -1,4 +1,5 @@
 class Todo {
+    public readonly id: string;
     public title: string;
     public content: string;
     protected createdAt: Date;
@@ -9,6 +10,7 @@ class Todo {
         if (!title.trim() || !content.trim()) {
             throw new Error("Нотаток не може бути порожнім");
         }
+        this.id = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substr(2, 9);
         this.title = title;
         this.content = content;
         this.createdAt = new Date();
@@ -30,7 +32,7 @@ class Todo {
     }
 
     getInfo(): string {
-        return `Заголовок: ${this.title}\nЗміст: ${this.content}\nСтворено: ${this.createdAt}\nОновлено: ${this.updatedAt}\nСтатус: ${this.completed ? 'Виконано' : 'Не виконано'}`;
+        return `Заголовок: ${this.title}\nЗміст: ${this.content}\nСтворено: ${this.createdAt.toLocaleString()}\nОновлено: ${this.updatedAt.toLocaleString()}\nСтатус: ${this.completed ? 'Виконано' : 'Не виконано'}`;
     }
 
     isCompleted(): boolean {
@@ -43,8 +45,11 @@ class Todo {
 }
 
 class ConfirmableTodo extends Todo {
-    private confirmAction(message: string): boolean {
-        return typeof window !== 'undefined' ? confirm(message) : true;
+    private confirmAction: (message: string) => boolean;
+
+    constructor(title: string, content: string, confirmAction: (message: string) => boolean = (msg) => confirm(msg)) {
+        super(title, content);
+        this.confirmAction = confirmAction;
     }
 
     edit(title: string, content: string): void {
@@ -65,24 +70,39 @@ class TodoList {
         this.todos.push(todo);
     }
 
-    remove(todo: Todo): void {
+    remove(todoId: string): void {
+        const todo = this.findById(todoId);
+        if (!todo) {
+            console.warn("Нотаток не знайдено!");
+            return;
+        }
         if (todo instanceof ConfirmableTodo && !todo.confirmDelete()) {
             return;
         }
-        this.todos = this.todos.filter(t => t !== todo);
+        this.todos = this.todos.filter(t => t.id !== todoId);
     }
 
     getAll(): Todo[] {
         return [...this.todos];
     }
 
-    findByTitle(title: string): Todo | undefined {
-        return this.todos.find(todo => todo.title === title);
+    findById(id: string): Todo | undefined {
+        return this.todos.find(todo => todo.id === id);
+    }
+
+    editTodo(id: string, newTitle: string, newContent: string): void {
+        const todo = this.findById(id);
+        if (!todo) {
+            console.warn("Нотаток не знайдено!");
+            return;
+        }
+        todo.edit(newTitle, newContent);
     }
 
     search(query: string): Todo[] {
+        const lowerQuery = query.toLowerCase();
         return this.todos.filter(todo => 
-            todo.title.includes(query) || todo.content.includes(query)
+            todo.title.toLowerCase().includes(lowerQuery) || todo.content.toLowerCase().includes(lowerQuery)
         );
     }
 
